@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>The 1CC Shrine ~ Records of Eastern Clears</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<table id="banner" width="100%" cellpadding="6" cellspacing="0">
+  <tr>
+    <td class="banner-cell">
+      <span class="banner-title">&#9733; The 1CC Shrine &#9733;</span><br>
+      <span class="banner-sub">~ Records of Eastern Clears ~ TH06 &ndash; TH20 ~</span>
+    </td>
+  </tr>
+</table>
+
+<table id="layout" width="100%" cellpadding="0" cellspacing="8">
+  <tr>
+    <td id="sidebar" valign="top" width="230">
+      <div class="panel">
+        <div class="panel-title">&#9642; Games &#9642;</div>
+        <ul id="game-list"></ul>
+      </div>
+      <div class="panel">
+        <div class="panel-title">&#9642; Pages &#9642;</div>
+        <ul class="nav">
+          <li><a href="#" id="nav-grid">Game Grid</a></li>
+          <li><a href="#" id="nav-dashboard">Dashboard</a></li>
+        </ul>
+      </div>
+      <div class="panel">
+        <div class="panel-title">&#9642; What next? &#9642;</div>
+        <div class="picker">
+          <select id="pick-difficulty">
+            <option value="">Any difficulty</option>
+            <option>Easy</option>
+            <option>Normal</option>
+            <option>Hard</option>
+            <option>Lunatic</option>
+            <option>Extra</option>
+            <option>Phantasm</option>
+          </select>
+          <button id="pick-button">Spin!</button>
+          <div id="pick-result"></div>
+        </div>
+      </div>
+      <div class="panel legend">
+        <div class="panel-title">&#9642; Legend &#9642;</div>
+        <table cellpadding="2" cellspacing="1" width="100%">
+          <tr><td class="cell st-not_cleared demo">&middot;</td><td>not cleared</td></tr>
+          <tr><td class="cell st-cleared demo">C</td><td>cleared (continues)</td></tr>
+          <tr><td class="cell st-one_cc demo">&#9733;</td><td>1cc!</td></tr>
+          <tr><td class="cell ineligible demo">&mdash;</td><td>not playable</td></tr>
+        </table>
+      </div>
+    </td>
+    <td id="content" valign="top">
+      <div id="view-grid" class="panel">
+        <div class="panel-title" id="grid-title">Loading&hellip;</div>
+        <div id="toolbar">
+          <button id="btn-play">&#9654; Play</button>
+          <button id="btn-stopwatch">&#9201; Stopwatch</button>
+          <button id="btn-log">+ Log session</button>
+          <span id="log-form">
+            <input type="date" id="log-date">
+            <input type="number" id="log-minutes" min="1" placeholder="min">
+            <button id="log-save">Save</button>
+          </span>
+          <span id="exe-info"></span>
+          <span id="playtime-total"></span>
+        </div>
+        <div id="grid-container"></div>
+      </div>
+      <div id="view-dashboard" class="panel" style="display:none">
+        <div class="panel-title">&#9642; Completion Dashboard &#9642;</div>
+        <div id="dashboard-container"></div>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<div id="statusbar">Ready.</div>
+<div id="footer">Best viewed at 1024&times;768 &middot; data lives in %APPDATA%\TouhouTracker</div>
+
+<script src="app.js"></script>
+</body>
+</html>

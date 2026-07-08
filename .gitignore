@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# PyInstaller output (rebuild with: pyinstaller 1cc_shrine.spec)
+build/
+dist/
+
+# Local databases (real data lives in %APPDATA%\TouhouTracker)
+*.db
+
+# OS / editor noise
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
