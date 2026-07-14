@@ -9,8 +9,15 @@ var state = {
   stopwatches: {}      // gameId -> Date.now() at stopwatch start
 };
 
-var STATUS_LABEL = { not_cleared: "·", cleared: "C", one_cc: "★" };
-var STATUS_NAME = { not_cleared: "not cleared", cleared: "cleared", one_cc: "1cc" };
+var STATUS_LABEL = {
+  not_cleared: "·", cleared: "C", one_cc: "★",
+  one_cc_no_bomb: "NB", one_cc_no_miss: "NM", one_cc_nmnb: "NMNB"
+};
+var STATUS_NAME = {
+  not_cleared: "not cleared", cleared: "cleared", one_cc: "1cc",
+  one_cc_no_bomb: "1cc, no bombs", one_cc_no_miss: "1cc, no misses",
+  one_cc_nmnb: "NMNB — perfect run"
+};
 
 function api() { return window.pywebview.api; }
 function el(id) { return document.getElementById(id); }
@@ -274,34 +281,39 @@ function bar(part, total) {
     w + 'px;display:block"></span></span>';
 }
 
+var TIER_KEYS = ["one_cc", "one_cc_no_bomb", "one_cc_no_miss", "one_cc_nmnb"];
+
 function dashTable(rows, labelHeader, labelOf, withPlaytime) {
   var html = '<table class="dash"><tr><th>' + labelHeader +
-    "</th><th>1cc</th><th>Cleared</th><th>Remaining</th><th>Total</th>" +
+    "</th><th>1cc</th><th>NB</th><th>NM</th><th>NMNB</th>" +
+    "<th>Cleared</th><th>Remaining</th><th>Total</th>" +
     "<th>1cc %</th><th>Progress</th>" +
     (withPlaytime ? "<th>Playtime</th>" : "") + "</tr>";
-  var t = { total: 0, cleared: 0, one_cc: 0, minutes: 0 };
-  rows.forEach(function (r) {
-    t.total += r.total; t.cleared += r.cleared; t.one_cc += r.one_cc;
-    t.minutes += r.minutes || 0;
-    html += "<tr><td>" + labelOf(r) + "</td>" +
-      '<td class="num">' + r.one_cc + "</td>" +
-      '<td class="num">' + r.cleared + "</td>" +
-      '<td class="num">' + (r.total - r.one_cc) + "</td>" +
+  var t = { total: 0, cleared: 0, one_cc_plus: 0, minutes: 0 };
+  TIER_KEYS.forEach(function (k) { t[k] = 0; });
+
+  function row(r, label, cls) {
+    var cells = "<tr" + (cls ? ' class="' + cls + '"' : "") + "><td>" + label + "</td>";
+    TIER_KEYS.forEach(function (k) {
+      cells += '<td class="num">' + r[k] + "</td>";
+    });
+    cells += '<td class="num">' + r.cleared + "</td>" +
+      '<td class="num">' + (r.total - r.one_cc_plus) + "</td>" +
       '<td class="num">' + r.total + "</td>" +
-      '<td class="num">' + pct(r.one_cc, r.total) + "</td>" +
-      "<td>" + bar(r.one_cc, r.total) + "</td>" +
+      '<td class="num">' + pct(r.one_cc_plus, r.total) + "</td>" +
+      "<td>" + bar(r.one_cc_plus, r.total) + "</td>" +
       (withPlaytime ? '<td class="num">' + fmtMinutes(r.minutes || 0) + "</td>" : "") +
       "</tr>";
+    return cells;
+  }
+
+  rows.forEach(function (r) {
+    t.total += r.total; t.cleared += r.cleared; t.one_cc_plus += r.one_cc_plus;
+    t.minutes += r.minutes || 0;
+    TIER_KEYS.forEach(function (k) { t[k] += r[k]; });
+    html += row(r, labelOf(r));
   });
-  html += '<tr class="total-row"><td>TOTAL</td>' +
-    '<td class="num">' + t.one_cc + "</td>" +
-    '<td class="num">' + t.cleared + "</td>" +
-    '<td class="num">' + (t.total - t.one_cc) + "</td>" +
-    '<td class="num">' + t.total + "</td>" +
-    '<td class="num">' + pct(t.one_cc, t.total) + "</td>" +
-    "<td>" + bar(t.one_cc, t.total) + "</td>" +
-    (withPlaytime ? '<td class="num">' + fmtMinutes(t.minutes) + "</td>" : "") +
-    "</tr></table>";
+  html += row(t, "TOTAL", "total-row") + "</table>";
   return html;
 }
 

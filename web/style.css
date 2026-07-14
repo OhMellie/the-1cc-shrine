@@ -154,6 +154,14 @@ td.cell:active:not(.demo):not(.ineligible) { border-style: inset; }
 .st-not_cleared { background: #d4d0c8; color: #888; }
 .st-cleared     { background: #b8e0a8; color: #226622; }
 .st-one_cc      { background: #ffd700; color: #7a0f24; font-size: 13px; }
+.st-one_cc_no_bomb { background: #b0d8f0; color: #1a4a6e; }
+.st-one_cc_no_miss { background: #d0b8f0; color: #4a2a7a; }
+.st-one_cc_nmnb {
+  background: #7a0f24;
+  color: #ffd700;
+  font-size: 10px;
+  letter-spacing: -0.5px;
+}
 td.ineligible {
   background: #8a8a8a;
   color: #666;
