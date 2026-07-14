@@ -11,8 +11,13 @@ from datetime import date
 import seed_data
 
 MAIN_DIFFICULTIES = ["Easy", "Normal", "Hard", "Lunatic"]
-STATUS_CYCLE = ["not_cleared", "cleared", "one_cc"]
+STATUS_CYCLE = ["not_cleared", "cleared", "one_cc", "one_cc_no_bomb",
+                "one_cc_no_miss", "one_cc_nmnb"]
 PHANTASM_GAME_NUMBER = 7  # PCB only
+
+
+def is_one_cc(status):
+    return STATUS_CYCLE.index(status) >= STATUS_CYCLE.index("one_cc")
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS games (
@@ -223,19 +228,21 @@ def _all_cells(conn):
 def get_dashboard(conn):
     per_game, per_difficulty = {}, {}
     for shot, diff, status in _all_cells(conn):
+        counters = {s: 0 for s in STATUS_CYCLE[1:]}
         g = per_game.setdefault(shot["gid"], {
             "game_id": shot["gid"], "number": shot["game_number"],
-            "title": shot["game_title"], "total": 0, "cleared": 0, "one_cc": 0,
+            "title": shot["game_title"], "total": 0, "one_cc_plus": 0,
+            **counters,
         })
         d = per_difficulty.setdefault(diff, {
-            "difficulty": diff, "total": 0, "cleared": 0, "one_cc": 0,
+            "difficulty": diff, "total": 0, "one_cc_plus": 0, **counters,
         })
         for bucket in (g, d):
             bucket["total"] += 1
-            if status == "cleared":
-                bucket["cleared"] += 1
-            elif status == "one_cc":
-                bucket["one_cc"] += 1
+            if status != "not_cleared":
+                bucket[status] += 1
+            if is_one_cc(status):
+                bucket["one_cc_plus"] += 1
     playtime = get_playtime(conn)
     for g in per_game.values():
         g["minutes"] = playtime.get(g["game_id"], 0)
@@ -261,7 +268,7 @@ def pick_next(conn, difficulty=None):
             "status": status,
         }
         for shot, diff, status in _all_cells(conn)
-        if status != "one_cc" and (difficulty is None or diff == difficulty)
+        if not is_one_cc(status) and (difficulty is None or diff == difficulty)
     ]
     return random.choice(candidates) if candidates else None
 
@@ -289,12 +296,22 @@ if __name__ == "__main__":
     assert "Extra" not in grid9["columns"]
 
     shot = grid["shots"][0]
-    assert cycle_status(conn, shot["id"], "Normal")["status"] == "cleared"
-    assert cycle_status(conn, shot["id"], "Normal")["status"] == "one_cc"
+    for expected in STATUS_CYCLE[1:] + ["not_cleared"]:
+        assert cycle_status(conn, shot["id"], "Normal")["status"] == expected
+
+    # clicks land on: 2 -> one_cc, 3 -> no_bomb, 5 -> nmnb
+    for clicks, idx in ((2, 0), (3, 1), (5, 2)):
+        for _ in range(clicks):
+            cycle_status(conn, grid["shots"][idx]["id"], "Hard")
     dash = get_dashboard(conn)
     pcb = next(g for g in dash["games"] if g["number"] == 7)
-    assert pcb["one_cc"] == 1, pcb
-    assert cycle_status(conn, shot["id"], "Normal")["status"] == "not_cleared"
+    assert (pcb["one_cc"], pcb["one_cc_no_bomb"], pcb["one_cc_nmnb"],
+            pcb["one_cc_plus"]) == (1, 1, 1, 3), pcb
+
+    for s in grid["shots"]:
+        for _ in range(5):
+            cycle_status(conn, s["id"], "Phantasm")
+    assert pick_next(conn, "Phantasm") is None, "picker offered a tiered cell"
 
     pick = pick_next(conn, "Lunatic")
     assert pick and pick["difficulty"] == "Lunatic"
